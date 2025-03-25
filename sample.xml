@@ -1,0 +1,41 @@
+<rdf:RDF
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:z="http://www.zotero.org/namespaces/export#"
+ xmlns:dcterms="http://purl.org/dc/terms/"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:bib="http://purl.org/net/biblio#"
+ xmlns:foaf="http://xmlns.com/foaf/0.1/">
+    <rdf:Description rdf:about="#item_10000">
+        <z:itemType>conferencePaper</z:itemType>
+        <dcterms:isPartOf>
+            <bib:Journal>
+                <dc:title>{kiyou}</dc:title>
+            </bib:Journal>
+        </dcterms:isPartOf>
+        <bib:authors>
+            <rdf:Seq>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>{last1}</foaf:surname>
+                        <foaf:givenName>{first1}</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>{last2}</foaf:surname>
+                        <foaf:givenName>{first2}</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+            </rdf:Seq>
+        </bib:authors>
+        <dc:subject>Domestic Conference</dc:subject>
+        <dc:subject>Reha</dc:subject>
+        <dc:title>{title}</dc:title>
+        <dc:date>{year}-{month}-{day}</dc:date>
+        <dc:description>{other}</dc:description>
+        <bib:pages>{pages}</bib:pages>
+        <bib:presentedAt>
+           <bib:Conference><dc:title>{conferenceTitle}</dc:title></bib:Conference>
+        </bib:presentedAt>
+    </rdf:Description>
+</rdf:RDF>

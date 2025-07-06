@@ -1,10 +1,13 @@
+tagList = ["Domestic Conference","Reha"]
+
+
 import re
 import time
 
 import pyperclip
 
 indent = "    "
-def tag(tag_name, meta = ""):
+def tag(tag_name, meta = "", last = '\n'):
     if meta != "":
         meta = " " + meta
     def _tag(f):
@@ -15,7 +18,7 @@ def tag(tag_name, meta = ""):
             for line in v.split('\n'):
                 indented_content += f"{indent}{line}\n"
             indented_content = indented_content.rstrip()  # 最後の余分な改行を削除
-            return f'<{tag_name}{meta}>\n{indented_content}\n</{tag_name}>'
+            return f'<{tag_name}{meta}>{last}{indented_content}{last}</{tag_name}>'
         return _wrapper
     return _tag
 
@@ -25,15 +28,23 @@ def tag(tag_name, meta = ""):
  xmlns:dc="http://purl.org/dc/elements/1.1/"
  xmlns:bib="http://purl.org/net/biblio#"
  xmlns:foaf="http://xmlns.com/foaf/0.1/" """)
-@tag("rdf:Description","rdf:about=\"#item_10000\"")
-def RDF(title, conferenceTitle, pages, date,authorList):
+@tag("rdf:Description","rdf:about=\"#item_100000\"")
+def RDF(title, conferenceTitle, pages, date,authorList,doi):
+    tagString = ""
+    for tag1 in tagList:
+        tagString += f"<dc:subject>{tag1}</dc:subject>"
+    doiString = ""
+    if doi is not None:
+        doiString = f"<dc:identifier>DOI {doi}</dc:identifier>"
+    print(doiString)
+
     return ("<z:itemType>conferencePaper</z:itemType>"
             + Journal(conferenceTitle)
             + authors(authorList)
-            + "<dc:subject>Domestic Conference</dc:subject>"
-            + "<dc:subject>Reha</dc:subject>"
+            + tagString
             +  f"<dc:title>{title}</dc:title>"
             +  f"<dc:date>{date}</dc:date>"
+            + doiString
             +  "<dc:description></dc:description>"
             +  f"<bib:pages>{pages}</bib:pages>"
             + Conference(conferenceTitle)
@@ -43,13 +54,22 @@ def RDF(title, conferenceTitle, pages, date,authorList):
 
 @tag("dcterms:isPartOf")
 @tag("bib:Journal")
+@tag("dc:title",last = "")
 def Journal(kiyou):
-    return  f"<dc:title>{kiyou}</dc:title>"
+    return  f"{kiyou}"
 
 @tag("rdf:li")
 @tag("foaf:Person")
 def autor(name):
-    return f"<foaf:surname>{name[1]}</foaf:surname>\n<foaf:givenName>{name[0]}</foaf:givenName>"
+    return f"{autor_first(name[1])}\n{autor_last(name[0])}"
+
+@tag("foaf:surname")
+def autor_first(name):
+    return name
+
+@tag("foaf:givenName")
+def autor_last(name):
+    return name
 
 @tag("bib:authors")
 @tag("rdf:Seq")
@@ -60,15 +80,27 @@ def authors(nameList):
     return s
 
 @tag("bib:presentedAt")
+@tag("bib:Conference")
+@tag("dc:title")
 def Conference(title):
-    return f"<bib:Conference><dc:title>{title}</dc:title></bib:Conference>"
+    return f"{title}"
 
 def split(pattern,s):
     return [t for t in re.split(pattern,s) if not re.fullmatch(pattern,t)]
 
 def parseString(s:str):
-    (authors,title,other) = s.split("\n")
-    authorElemList = split(r"(，|, |,|， )",authors)
+    doi = None
+    list = s.split("\n")
+    authors = list[0]
+    title = list[1]
+    other = list[2]
+    if len(list)>3:
+        doiString = list[3]
+        if doiString.startswith("DOI:"):
+            doiString = doiString[len("DOI:"):]
+            doi = doiString.strip()
+
+    authorElemList = split(r"(，|, |,|， )",authors.replace("and ",""))
     authorList = []
     for authorElem in authorElemList:
         if authorElem[0] == ' ':
@@ -91,17 +123,26 @@ def parseString(s:str):
         dateElem = otherElemList[-1]
     pages = re.sub("pp.( )*","",pagesElem)
     date = re.sub("[年月]","-",dateElem.split("-")[0].replace("日",""))
-    return title, conferenceTitle, pages, date,authorList
+    return title, conferenceTitle, pages, date,authorList,doi
 
 
-def saveFile(text,fileName):
-        title, conferenceTitle, pages, date, authorList = parseString(text)
-        s = RDF(title, conferenceTitle, pages, date, authorList)
-        with open(fileName, "w", encoding='utf-8') as o:
+
+def saveFile(text,count):
+        title, conferenceTitle, pages, date, authorList, doi = parseString(text)
+        s = RDF(title, conferenceTitle, pages, date, authorList,doi)
+        filename =f"{count}_{sanitize_filename(title)}.rdf"
+        with open(filename, "w", encoding='utf-8') as o:
             print(s, file = o)
-            print(f"successfully saved to {fileName}")
+            print(f"successfully saved to {filename}")
 
-
+def sanitize_filename(filename):
+    # Windowsで無効な文字を除去または置換
+    invalid_chars = r'[<>:"/\\|?*\r\n]'
+    # 無効な文字を無視
+    sanitized = re.sub(invalid_chars, '', filename)
+    # 末尾のピリオドやスペースを除去
+    sanitized = sanitized.strip('. ')
+    return sanitized
 
 def monitor_clipboard():
     """
@@ -124,7 +165,7 @@ def monitor_clipboard():
                 # ここに実行したい処理を追加
 
                 count += 1
-                saveFile(current_clipboard, f"export{count}.rdf")
+                saveFile(current_clipboard, count)
 
 
             # 少し待機してCPU使用率を下げる

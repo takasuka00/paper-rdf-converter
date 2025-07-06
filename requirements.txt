@@ -1,0 +1,11 @@
+# Academic Paper RDF Converter Dependencies
+
+# クリップボード操作ライブラリ
+pyperclip>=1.8.0
+
+# 標準ライブラリ（Python 3.7+に含まれているため記載不要）
+# - re
+# - time
+# - typing
+# - dataclasses (Python 3.7+)
+# - pathlib (Python 3.4+)

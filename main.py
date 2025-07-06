@@ -1,3 +1,6 @@
+DEFAULT_TAGS = ["Domestic Conference", "Reha"]
+
+
 import re
 import time
 from typing import List, Tuple, Optional
@@ -47,7 +50,7 @@ def tag(tag_name, meta="", last='\n'):
 class RDFGenerator:
     """RDF形式のXMLを生成するクラス（デコレーター使用版）"""
 
-    DEFAULT_TAGS = ["Domestic Conference", "Reha"]
+
 
     @tag("rdf:RDF", meta="""xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
  xmlns:z="http://www.zotero.org/namespaces/export#"
@@ -59,7 +62,7 @@ class RDFGenerator:
     def generate_rdf(self, title, conference_title, pages, date, author_list, doi):
         """RDF形式のXMLを生成"""
         tag_string = ""
-        for tag_item in self.DEFAULT_TAGS:
+        for tag_item in DEFAULT_TAGS:
             tag_string += f"<dc:subject>{tag_item}</dc:subject>\n"
 
         doi_string = ""
@@ -170,7 +173,7 @@ class PaperInfoParser:
     @staticmethod
     def _parse_authors(authors_line: str) -> List[Tuple[str, str]]:
         """著者情報を解析"""
-        # "and "を除去
+        # andを除去
         cleaned_authors = authors_line.replace("and ", "")
 
         # 区切り文字で分割
